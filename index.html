@@ -365,9 +365,26 @@ footer a{color:#fff; text-decoration:none}
   const links=[...document.querySelectorAll("nav.menu a")];
   const secs=links.map(a=>document.querySelector(a.getAttribute("href"))).filter(Boolean);
   addEventListener("scroll",()=>{
-    let cur=0; secs.forEach((s,i)=>{ if(s.getBoundingClientRect().top<140) cur=i; });
+    let cur=0; secs.forEach((s,i)=>{ if(s.getBoundingClientRect().top<innerHeight*0.5) cur=i; });
     links.forEach((a,i)=>a.classList.toggle("on", i===cur));
   },{passive:true});
+
+  // Navegação pelo menu: rola até a seção e centraliza o conteúdo na área visível, abaixo do cabeçalho fixo
+  document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{
+    const id=a.getAttribute("href"); if(id.length<2) return;
+    const sec=document.querySelector(id); if(!sec) return;
+    e.preventDefault();
+    let top;
+    if(id==="#inicio"){ top=0; }
+    else{
+      const el=sec.querySelector(":scope > .wrap")||sec;
+      const hh=h.getBoundingClientRect().bottom;
+      const avail=innerHeight-hh, r=el.getBoundingClientRect();
+      top=scrollY+r.top-hh-(r.height<avail ? (avail-r.height)/2 : 24);
+    }
+    scrollTo({top:Math.max(0,top), behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+    history.replaceState(null,"",id);
+  }));
 
   const items=[...document.querySelectorAll("#gallery button")];
   const lb=document.getElementById("lb"), li=document.getElementById("lb-img");
